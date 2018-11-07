@@ -4,16 +4,22 @@ from torch.utils.data import DataLoader, Dataset
 import cv2
 import json
 import numpy as np
+import matplotlib.pyplot as plt
 
 
-LabelColor = {""}
+labelColor = {'leftline': 10, 'rightline':30, 'straitline':50,
+              'rightstraitline':70, 'leftstraitline':90,
+               'whiteline':110, 'stopline':130,
+              'leftstraitlight':150, 'rightstraitlight':170,
+               'leftlight':190, 'straitlight':210,'rightlight':230,}
+
 
 class TrafficDataSet(Dataset):
     def __init__(self, path, width, height):
         self.path = path
         self.width = width
         self.heigth = height
-        self.shape = (height, width)
+        self.shape = (width, height)
 
         self.imagepath = os.path.join(path, "image")
         self.jsonpath = os.path.join(path, "json")
@@ -32,9 +38,11 @@ class TrafficDataSet(Dataset):
         mask = np.zeros(shape, dtype=np.uint8)
         for item in items:
             points = np.array(item["points"])
+            label = item["label"].lower()
             points = points[np.newaxis, :]
             # print(b.shape, points.shape)
-            cv2.fillPoly(mask, points, 255)
+            color = labelColor.get(label)
+            cv2.fillPoly(mask, points, color)
         return mask
 
     def load_data(self, name):
@@ -43,10 +51,12 @@ class TrafficDataSet(Dataset):
         img_height=0
         for i in range(1,4):
             file = "{}_{}.jpg".format(name,str(i).zfill(2))
-            image = cv2.imread(os.path.join(self.imagepath, file))
-            print(file)
+            filePath = os.path.join(self.imagepath, file)
+            image = cv2.imdecode(np.fromfile(filePath,dtype=np.uint8),-1)
+            # print(file)
             img_height, img_width, _ = image.shape
             image = cv2.resize(image, self.shape)
+            # print(self.shape, image.shape)
             array.append(image)
 
         array = np.stack(array)
@@ -69,9 +79,18 @@ class TrafficDataSet(Dataset):
 
 
 if __name__ == "__main__":
-    dataset = TrafficDataSet("../../data/1208/", 1000, 800)
-    dataloader = DataLoader(dataset, 2, shuffle=True)
+    dataset = TrafficDataSet("../../data/1208", 1000, 800)
+    dataloader = DataLoader(dataset, 1, num_workers=2, shuffle=True)
     datait = iter(dataloader)
-    print(len(datait))
+    # count = 0
+    # for batch, id in datait:
+    #     count += 1
+    #     print(batch.shape, count)
     x, y = next(datait)
-    print(x.shape, y.shape)
+    image = x[0,0,:,:,0:3]
+    label = x[0,0,:,:,3]
+
+    # plt.imshow(image,origin=(0,0))
+    plt.imshow(label)
+
+    plt.show()
