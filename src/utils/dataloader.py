@@ -69,17 +69,25 @@ def load_label(file, shape):
         points = points[np.newaxis,:]
         # print(b.shape, points.shape)
         cv2.fillPoly(mask, points, 255)
-    cv2.imwrite("test.jpg",mask)
+    return mask[:,:,np.newaxis]
 
 def load_image(file):
     image = cv2.imread(file)
     print(image.shape)
-    image = cv2.resize(image,(500, 800))
+    array = np.tile(image,(3,1,1,1))
+    mask = load_label("../../data/1208/json/5201002012761797.json", (1080, 1920))
+    mask = np.tile(mask, (3,1,1,1))
+    print(array.shape, mask.shape)
+    result = np.concatenate((array,mask),-1)
+    print(result.shape)
+    mask = result[0,:,:,3]
+    plt.imshow(mask)
+    plt.show()
 
 
 if __name__ == "__main__":
     # file_normal("E:/workstation/traffic-event/data/1208")
-    load_label("E:/workstation/traffic-event/data/1208/json/1ghe225.json", (1080, 1920))
-    # load_image("E:/workstation/traffic-event/data/1208/image/0_12080_1ghe225_AA8872_20181031175409_01.jpg")
+    # load_label("E:/workstation/traffic-event/data/1208/json/1ghe225.json", (1080, 1920))
+    load_image("../../data/1208/image/1_12081_5201002012761797_贵JRB135_20180930170214_01.jpg")
     # check("E:/workstation/traffic-event/data/1208")
     # load("E:/workstation/traffic-event/data/1208")
