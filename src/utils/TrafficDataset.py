@@ -13,7 +13,6 @@ labelColor = {'leftline': 10, 'rightline':30, 'straitline':50,
               'leftstraitlight':150, 'rightstraitlight':170,
                'leftlight':190, 'straitlight':210,'rightlight':230,}
 
-
 class TrafficDataSet(Dataset):
     def __init__(self, path, width, height):
         self.path = path
@@ -72,14 +71,16 @@ class TrafficDataSet(Dataset):
     def __getitem__(self, index):
         file = self.names[index]
         x, y = self.load_data(file)
-        return x, y
+        x = np.transpose(x, (0, 3, 1, 2)) / 255.0
+        # print(x.shape)
+        return x.astype(np.float), y
 
     def __len__(self):
         return len(self.names)
 
 
 if __name__ == "__main__":
-    dataset = TrafficDataSet("../../data/1208", 1000, 800)
+    dataset = TrafficDataSet("../../data/1208_test", 1000, 800)
     dataloader = DataLoader(dataset, 1, num_workers=2, shuffle=True)
     datait = iter(dataloader)
     # count = 0

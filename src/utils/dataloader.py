@@ -48,16 +48,16 @@ def check(path):
     jsonpath = os.path.join(path,"json")
     jsonfile = os.listdir(jsonpath)
 
-    markset = set()
-    for file in jsonfile:
-        fd = open(os.path.join(jsonpath, file))
-        jsonObj = json.load(fd)
-        shapes = jsonObj["shapes"]
-        for shape in shapes:
-            markset.add(shape["label"].lower())
-            # print(shape["label"])
-
-    print(markset)
+    # markset = set()
+    # for file in jsonfile:
+    #     fd = open(os.path.join(jsonpath, file))
+    #     jsonObj = json.load(fd)
+    #     shapes = jsonObj["shapes"]
+    #     for shape in shapes:
+    #         markset.add(shape["label"].lower())
+    #         # print(shape["label"])
+    #
+    # print(markset)
 
 
     count = 0
@@ -114,7 +114,7 @@ if __name__ == "__main__":
     # load_label("E:/workstation/traffic-event/data/1208/json/1ghe225.json", (1080, 1920))
     # load_image("../../data/1208/image/1_12081_5201002012761797_贵JRB135_20180930170214_01.jpg")
     # check("E:/workstation/traffic-event/data/1208-split/1_14")
-    check("../../data/1208")
+    check("../../data/image18")
     # file_normal("../../data/1208-split/1_04")
     # delete("../../data/1208-split/1_04", "../../data/1208")
     # load("E:/workstation/traffic-event/data/1208")
