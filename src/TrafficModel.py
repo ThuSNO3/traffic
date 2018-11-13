@@ -59,6 +59,7 @@ def train(train_data, test_data, model):
     lossfunc = nn.CrossEntropyLoss()
     optimzer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
+    # print("training samples:", len(train_data))
     for epoch in range(epochs):
         batch = 0
         for x, y in train_data:
@@ -81,6 +82,7 @@ def train(train_data, test_data, model):
         # test
         print()
         print("epoch test:", epoch)
+
         with torch.no_grad():
             loss = 0
             total = 0
@@ -96,8 +98,10 @@ def train(train_data, test_data, model):
                 total += y.size(0)
                 _, predicted = torch.max(out, 1)
                 correct += (predicted == y).sum()
+
+            print("total test samples:", total)
             print("loss:", loss / total)
-            print("acc:", correct, total)
+            print("accuracy={}%".format(100 * correct / float(total)))
             model_path = os.path.join(save_path, "model.{}.pth".format(epoch))
             torch.save(model.state_dict(), model_path)
             print("saving model to {}".format(model_path))
