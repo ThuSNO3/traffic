@@ -1,5 +1,6 @@
 
 import os
+import traceback
 from torch.utils.data import DataLoader, Dataset
 import cv2
 import json
@@ -70,9 +71,10 @@ class TrafficDataSet(Dataset):
 
     def __getitem__(self, index):
         file = self.names[index]
+        # print(file)
         x, y = self.load_data(file)
         x = np.transpose(x, (0, 3, 1, 2)) / 255.0
-        # print(x.shape)
+
         return x.astype(np.float), y
 
     def __len__(self):
@@ -87,11 +89,10 @@ if __name__ == "__main__":
     # for batch, id in datait:
     #     count += 1
     #     print(batch.shape, count)
-    x, y = next(datait)
-    image = x[0,0,:,:,0:3]
-    label = x[0,0,:,:,3]
 
-    # plt.imshow(image,origin=(0,0))
-    plt.imshow(label)
-
-    plt.show()
+    for x, y in datait:
+        print(x.shape, y.shape)
+    # # plt.imshow(image,origin=(0,0))
+    # plt.imshow(label)
+    #
+    # plt.show()

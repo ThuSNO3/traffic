@@ -159,13 +159,26 @@ def split_test(path, test):
     #         print(nname, os.path.exists(filepath), os.path.exists(jsonfilepath))
 
 
+def drop_json(path):
+    jsonpath = os.path.join(path,"json")
+    newpath = os.path.join(path,"new")
+    for file in os.listdir(jsonpath):
+        fd = open(os.path.join(jsonpath, file))
+        nd = open(os.path.join(newpath, file), "w")
+        jsonObj = json.load(fd)
+        del jsonObj["imagePath"]
+        del jsonObj["imageData"]
+        json.dump(jsonObj, nd)
+
+
 if __name__ == "__main__":
     # file_normal("E:/workstation/traffic-event/data/1_14")
     # load_label("E:/workstation/traffic-event/data/1208/json/1ghe225.json", (1080, 1920))
     # load_image("../../data/1208/image/1_12081_5201002012761797_贵JRB135_20180930170214_01.jpg")
     # check("E:/workstation/traffic-event/data/1208-split/1_14")
     # check("../../data/1208")
-    stats("../../data/1208")
+    # stats("../../data/1208")
+    drop_json("../../data/1208_test")
     # split_test("../../data/1208_train", "../../data/1208_test")
     # file_normal("../../data/0_3")
     # delete("../../data/1208-split/1_04", "../../data/1208")

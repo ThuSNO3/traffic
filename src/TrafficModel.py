@@ -1,5 +1,7 @@
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
+
 import torch.nn as nn
 import torch
 from torchvision import models
@@ -26,6 +28,7 @@ class Model(nn.Module):
         self.fc1 = nn.Linear(feature_size, 1024)
         self.dropout = nn.Dropout()
         self.fc2 = nn.Linear(1024, num_class)
+
         # print(self.resnet)
 
     def forward(self, input):
@@ -43,58 +46,81 @@ class Model(nn.Module):
         out = self.fc2(out)
         return out
 
+train_path = "../data/1208_train"
+test_path = "../data/1208_test"
+save_path = "../model/"
 epochs = 100
-lr = 0.001
+lr = 0.0001
 batch_size = 20
-save_path = "model/"
 numclass = 2
+use_gpu = True
 
 def train(train_data, test_data, model):
     lossfunc = nn.CrossEntropyLoss()
     optimzer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
     for epoch in range(epochs):
+        batch = 0
         for x, y in train_data:
+
             optimzer.zero_grad()
             x = x[:, :, 0:3, :, :]
-            out = model.forward(x.type("torch.FloatTensor"))
+            x = x.type("torch.FloatTensor")
+            if use_gpu:
+                x = x.cuda()
+                y = y.cuda()
+            out = model.forward(x)
             loss = lossfunc(out, y)
             loss.backward()
             optimzer.step()
             print("loss:", loss.item())
+            batch += 1
+            # if batch > 2:
+            #     break
 
         # test
         print()
         print("epoch test:", epoch)
-        with torch.no_grad:
+        with torch.no_grad():
             loss = 0
             total = 0
             correct = 0
             for x, y in test_data:
                 x = x[:, :, 0:3, :, :]
-                out = model.forward(x.type("torch.FloatTensor"))
+                x = x.type("torch.FloatTensor")
+                if use_gpu:
+                    x = x.cuda()
+                    y = y.cuda()
+                out = model.forward(x)
                 loss += lossfunc(out, y).item()
                 total += y.size(0)
-                predicted = torch.max(out, 1)
+                _, predicted = torch.max(out, 1)
                 correct += (predicted == y).sum()
             print("loss:", loss / total)
-            print("acc:", correct / total)
+            print("acc:", correct, total)
             model_path = os.path.join(save_path, "model.{}.pth".format(epoch))
             torch.save(model.state_dict(), model_path)
             print("saving model to {}".format(model_path))
 
 
 if __name__ == "__main__":
-    train_data = TrafficDataSet("../data/1208_train", 500, 400)
-    train_loader = DataLoader(train_data, batch_size, num_workers=2, shuffle=True)
-    test_data = TrafficDataSet("../data/1208_test", 500, 400)
-    test_loader = DataLoader(test_data, batch_size, num_workers=2, shuffle=True)
+    train_data = TrafficDataSet(train_path, 500, 400)
+    train_loader = DataLoader(train_data, batch_size, num_workers=0, shuffle=True)
+    test_data = TrafficDataSet(test_path, 500, 400)
+    test_loader = DataLoader(test_data, batch_size, num_workers=0, shuffle=True)
     # datait = iter(dataloader)
+
+    # for x,y in train_loader:
+    #     print(x.shape, y.shape)
+
 
     print("Train data:", len(train_data))
     print("Test data:", len(test_data))
     print("Build Model......")
     model = Model(numclass)
+
+    if use_gpu:
+        model = model.cuda()
 
     print("Begin training......")
     train(train_loader, test_loader, model)
